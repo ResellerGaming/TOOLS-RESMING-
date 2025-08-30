@@ -21,49 +21,50 @@ document.querySelectorAll('.ai-card').forEach(card => {
 });
 
 document.getElementById('send-btn').addEventListener('click', sendMessage);
-document.getElementById('message-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
+
+const input = document.getElementById('message-input');
+input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
 });
+
 document.getElementById('clear-chat').addEventListener('click', clearChat);
 
 function selectAI(ai) {
     selectedAI = ai;
-    
-    // Update UI
+
     document.querySelectorAll('.ai-card').forEach(card => {
         card.classList.remove('selected');
     });
     document.querySelector(`[data-ai="${ai}"]`).classList.add('selected');
-    
+
     document.getElementById('current-ai').textContent = `Menggunakan: ${aiNames[ai]}`;
-    document.getElementById('message-input').disabled = false;
+    input.disabled = false;
     document.getElementById('send-btn').disabled = false;
     document.getElementById('clear-chat').style.display = 'block';
-    
-    // Clear chat
+
     clearChat();
-    addMessage('ai', `Halo! Saya ${aiNames[ai]} siap membantu Anda. Apa yang ingin Anda tanyakan?`);
+    addMessage('ai', `Halo! Saya ${aiNames[selectedAI]} siap membantu Anda. Apa yang ingin Anda tanyakan?`);
 }
 
 function sendMessage() {
-    const input = document.getElementById('message-input');
     const message = input.value.trim();
-    
     if (!message || !selectedAI) return;
-    
-    // Add user message
+
     addMessage('user', message);
     input.value = '';
-    
-    // Show loading
+    input.style.height = 'auto'; // Reset height textarea
+
     document.getElementById('loading').style.display = 'block';
-    
-    // Send to API
+
     fetch(apiEndpoints[selectedAI] + encodeURIComponent(message))
         .then(response => response.text())
         .then(data => {
             document.getElementById('loading').style.display = 'none';
-            addMessage('ai', data);
+            const cleanText = extractCleanText(data);
+            addMessage('ai', cleanText);
         })
         .catch(error => {
             document.getElementById('loading').style.display = 'none';
@@ -72,22 +73,36 @@ function sendMessage() {
         });
 }
 
+function extractCleanText(rawData) {
+    try {
+        const jsonData = JSON.parse(rawData);
+        if (jsonData.result) return jsonData.result;
+        if (jsonData.answer) return jsonData.answer;
+    } catch {
+        // Bukan JSON, langsung kembalikan teks
+    }
+
+    return rawData
+        .replace(/\\n/g, '\n')
+        .replace(/\\"/g, '"')
+        .replace(/["{}[\]]/g, '')
+        .replace(/(creator|status|question|result|answer):/g, '')
+        .trim();
+}
+
 function addMessage(sender, text) {
     const chatBox = document.getElementById('chat-box');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}`;
-    
+
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
     contentDiv.textContent = text;
-    
+
     messageDiv.appendChild(contentDiv);
     chatBox.appendChild(messageDiv);
-    
-    // Scroll to bottom
+
     chatBox.scrollTop = chatBox.scrollHeight;
-    
-    // Store in history
     chatHistory.push({ sender, text });
 }
 
@@ -95,7 +110,7 @@ function clearChat() {
     const chatBox = document.getElementById('chat-box');
     chatBox.innerHTML = '';
     chatHistory = [];
-    
+
     if (selectedAI) {
         addMessage('ai', `Halo! Saya ${aiNames[selectedAI]} siap membantu Anda. Apa yang ingin Anda tanyakan?`);
     } else {
@@ -105,6 +120,15 @@ function clearChat() {
                 <h3>Selamat Datang di AI Hub</h3>
                 <p>Pilih salah satu AI di atas untuk memulai percakapan</p>
             </div>
+        `;
+    }
+}
+
+// Auto-resize textarea
+input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = input.scrollHeight + 'px';
+});            </div>
         `;
     }
 }
