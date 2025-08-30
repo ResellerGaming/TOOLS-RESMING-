@@ -128,6 +128,30 @@ function clearChat() {
 input.addEventListener('input', () => {
     input.style.height = 'auto';
     input.style.height = input.scrollHeight + 'px';
+});}
+
+function clearChat() {
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML = '';
+    chatHistory = [];
+
+    if (selectedAI) {
+        addMessage('ai', `Halo! Saya ${aiNames[selectedAI]} siap membantu Anda. Apa yang ingin Anda tanyakan?`);
+    } else {
+        chatBox.innerHTML = `
+            <div class="welcome-message">
+                <i class="fas fa-comments"></i>
+                <h3>Selamat Datang di AI Hub</h3>
+                <p>Pilih salah satu AI di atas untuk memulai percakapan</p>
+            </div>
+        `;
+    }
+}
+
+// Auto-resize textarea
+input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = input.scrollHeight + 'px';
 });            </div>
         `;
     }
