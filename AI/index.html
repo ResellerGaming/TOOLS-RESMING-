@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hub - Reseller Gaming</title>
+    <link rel="stylesheet" href="/AI/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>AI Hub</h1>
+                <span>Powered by Reseller Gaming</span>
+            </div>
+            <p class="subtitle">Pilih AI favoritmu dan mulai berkonsultasi</p>
+        </header>
+
+        <div class="ai-selector">
+            <div class="ai-card" data-ai="chatgpt">
+                <i class="fab fa-openai"></i>
+                <h3>ChatGPT</h3>
+                <p>AI Chatbot canggih dari OpenAI</p>
+                <span class="badge">GPT-4</span>
+            </div>
+
+            <div class="ai-card" data-ai="gemini">
+                <i class="fas fa-gem"></i>
+                <h3>Gemini</h3>
+                <p>AI multimodal dari Google</p>
+                <span class="badge">Pro</span>
+            </div>
+
+            <div class="ai-card" data-ai="grok">
+                <i class="fas fa-bolt"></i>
+                <h3>Grok</h3>
+                <p>AI dari xAI dengan personality</p>
+                <span class="badge">Beta</span>
+            </div>
+
+            <div class="ai-card" data-ai="aicoder">
+                <i class="fas fa-code"></i>
+                <h3>AI Coder</h3>
+                <p>AI untuk bantu coding</p>
+                <span class="badge">Code</span>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="selected-ai">
+                <span id="current-ai">Pilih AI di atas untuk memulai</span>
+                <button id="clear-chat" style="display:none;">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+
+            <div id="chat-box" class="chat-box">
+                <div class="welcome-message">
+                    <i class="fas fa-comments"></i>
+                    <h3>Selamat Datang di AI Hub</h3>
+                    <p>Pilih salah satu AI di atas untuk memulai percakapan</p>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <input type="text" id="message-input" placeholder="Tulis pesanmu di sini..." disabled>
+                <button id="send-btn" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+
+            <div id="loading" class="loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>AI sedang mengetik...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="/AI/index.js"></script>
+</body>
+      </html>
