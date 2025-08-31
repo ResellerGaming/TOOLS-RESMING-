@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Download TikTok HD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --card: #1a1a1a;
+      --accent-pink: #fe2c55;
+      --accent-cyan: #25f4ee;
+      --radius: 12px;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+    .card {
+      max-width: 480px;
+      width: 100%;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: 0 0 25px rgba(254, 44, 85, 0.3), 0 0 25px rgba(37, 244, 238, 0.2);
+      padding: 30px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    input[type=url] {
+      width: 100%;
+      padding: 12px 15px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      margin-bottom: 15px;
+      background: #111;
+      color: #fff;
+      outline: 2px solid transparent;
+      transition: 0.3s;
+    }
+    input[type=url]:focus {
+      outline: 2px solid var(--accent-pink);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .loading {
+      margin: 15px 0;
+      font-size: 0.95rem;
+      color: #ccc;
+      display: none;
+    }
+    .result {
+      display: none;
+      margin-top: 20px;
+      background: #111;
+      border-radius: var(--radius);
+      padding: 15px;
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.05);
+      animation: fadeIn 0.5s ease;
+    }
+    .result img {
+      width: 100%;
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+    }
+    .result a {
+      display: block;
+      margin: 8px 0;
+      padding: 10px;
+      background: #222;
+      border-radius: var(--radius);
+      text-align: center;
+      text-decoration: none;
+      color: #fff;
+      transition: 0.3s;
+    }
+    .result a:hover {
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+      color: #fff;
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #aaa;
+    }
+    @keyframes fadeIn {
+      from {opacity:0; transform:translateY(10px);}
+      to {opacity:1; transform:translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Download TikTok</h1>
+    <input id="url" type="url" placeholder="https://vt.tiktok.com/xxxxx" required>
+    <button id="btn" onclick="dl()">Download</button>
+
+    <div class="loading" id="loading">⏳ Mengambil video...</div>
+
+    <div class="result" id="result">
+      <img id="thumb" alt="Thumbnail">
+      <h4 id="title"></h4>
+      <a id="hd" target="_blank" rel="noopener">📹 Download HD</a>
+      <a id="sd" target="_blank" rel="noopener">📹 Download SD</a>
+      <a id="mp3" target="_blank" rel="noopener">🎵 Download Audio</a>
+    </div>
+
+    <footer>© 2025 RESELLER GAMING PROGRAMER</footer>
+  </div>
+
+  <script>
+    async function dl() {
+      const url = document.getElementById('url').value.trim();
+      if (!url) return alert('Masukkan link TikTok!');
+
+      const btn = document.getElementById('btn');
+      const loading = document.getElementById('loading');
+      const result = document.getElementById('result');
+
+      btn.disabled = true;
+      loading.style.display = 'block';
+      result.style.display = 'none';
+
+      try {
+        const api = `https://api.nvidiabotz.xyz/download/tiktok?url=${encodeURIComponent(url)}`;
+        const res = await fetch(api);
+        const json = await res.json();
+
+        if (!json.status) throw new Error(json.message || 'Gagal');
+
+        const { video_hd, video_sd, mp3, thumbnail, title } = json.result;
+
+        // Auto-download HD
+        const a = document.createElement('a');
+        a.href = video_hd;
+        a.download = 'tiktok-hd.mp4';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Tampilkan hasil lengkap
+        document.getElementById('thumb').src = thumbnail;
+        document.getElementById('title').textContent = title;
+        document.getElementById('hd').href = video_hd;
+        document.getElementById('sd').href = video_sd;
+        document.getElementById('mp3').href = mp3;
+        result.style.display = 'block';
+      } catch (e) {
+        alert(e.message || 'Server error');
+      } finally {
+        btn.disabled = false;
+        loading.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+  </html>
