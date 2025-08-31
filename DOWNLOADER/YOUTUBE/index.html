@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Download YouTube MP3 / MP4</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root {
+      --accent:#ff003c;
+      --accent2:#1db954;
+      --radius:14px;
+      --text:#f1f1f1;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif}
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      color:var(--text);
+      background:#0a0a0a;
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* 🌌 Background Bintang */
+    .stars{
+      position:absolute;
+      width:100%;
+      height:100%;
+      top:0;left:0;
+      overflow:hidden;
+      z-index:-1;
+    }
+    .stars span{
+      position:absolute;
+      width:2px;height:2px;
+      background:#fff;
+      border-radius:50%;
+      opacity:0.7;
+      animation:twinkle 8s linear infinite;
+    }
+    @keyframes twinkle{
+      0%,100%{opacity:0.2;transform:translateY(0)}
+      50%{opacity:1;transform:translateY(-20px)}
+    }
+
+    /* Card utama */
+    .card{
+      max-width:460px;
+      width:100%;
+      background:#111;
+      border-radius:var(--radius);
+      box-shadow:0 0 20px rgba(255,0,60,.2);
+      padding:32px;
+      text-align:center;
+      animation:fadeIn .7s ease-in-out;
+      position:relative;
+      z-index:1;
+    }
+    h1{
+      margin-bottom:25px;
+      font-size:26px;
+      color:var(--accent);
+      text-shadow:0 0 8px rgba(255,0,60,.6);
+    }
+    input[type=url]{
+      width:100%;
+      padding:14px 16px;
+      border:1px solid #333;
+      border-radius:var(--radius);
+      font-size:16px;
+      margin-bottom:22px;
+      background:#1a1a1a;
+      color:#eee;
+      outline:none;
+      transition:.2s;
+    }
+    input[type=url]:focus{
+      border-color:var(--accent);
+      box-shadow:0 0 10px rgba(255,0,60,.5);
+    }
+    .btn-group{display:flex;gap:14px}
+    button{
+      flex:1;
+      padding:14px;
+      border:none;
+      border-radius:var(--radius);
+      font-size:16px;
+      cursor:pointer;
+      transition:.3s;
+      font-weight:600;
+    }
+    button.mp3{
+      background:linear-gradient(135deg,var(--accent2),#22e067);
+      color:#fff;
+      box-shadow:0 0 12px rgba(29,185,84,.5);
+    }
+    button.mp4{
+      background:linear-gradient(135deg,var(--accent),#ff4d6d);
+      color:#fff;
+      box-shadow:0 0 12px rgba(255,0,60,.5);
+    }
+    button:hover{transform:scale(1.05);opacity:.95}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .loading{display:none;margin-top:18px;color:#ccc}
+    .toast{
+      position:fixed;
+      bottom:70px;
+      right:20px;
+      background:#111;
+      color:#fff;
+      padding:12px 18px;
+      border-radius:var(--radius);
+      box-shadow:0 0 15px rgba(0,0,0,.5);
+      display:none;
+      animation:slideUp .4s ease-out;
+      z-index:99;
+    }
+    footer{
+      position:fixed;
+      bottom:15px;
+      left:50%;
+      transform:translateX(-50%);
+      font-size:13px;
+      color:#aaa;
+      letter-spacing:0.5px;
+    }
+    footer span{
+      color:var(--accent);
+      font-weight:600;
+      text-shadow:0 0 6px rgba(255,0,60,.6);
+    }
+    @keyframes fadeIn{
+      from{opacity:0;transform:translateY(20px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+    @keyframes slideUp{
+      from{opacity:0;transform:translateY(30px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+  </style>
+</head>
+<body>
+  <!-- Bintang -->
+  <div class="stars">
+    <span style="left:10%;top:20%;animation-duration:7s"></span>
+    <span style="left:30%;top:60%;animation-duration:9s"></span>
+    <span style="left:50%;top:40%;animation-duration:11s"></span>
+    <span style="left:70%;top:80%;animation-duration:8s"></span>
+    <span style="left:85%;top:25%;animation-duration:10s"></span>
+    <span style="left:15%;top:75%;animation-duration:12s"></span>
+  </div>
+
+  <!-- Card -->
+  <div class="card">
+    <h1>Download YouTube</h1>
+    <input id="url" type="url" placeholder="https://www.youtube.com/watch?v=..." required>
+    <div class="btn-group">
+      <button class="mp3" onclick="dl('mp3')">🎵 MP3<br><small>Audio Only</small></button>
+      <button class="mp4" onclick="dl('mp4')">🎥 MP4<br><small>Video HD</small></button>
+    </div>
+    <div class="loading" id="loading">⏳ Sedang memproses...</div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">✅ Download dimulai</div>
+
+  <!-- Footer -->
+  <footer>© 2025 <span>Reseller Gaming Programer</span></footer>
+
+  <script>
+    async function dl(type) {
+      const url = document.getElementById('url').value.trim();
+      if (!url) return alert('Masukkan link YouTube!');
+
+      const loading = document.getElementById('loading');
+      loading.style.display = 'block';
+      [...document.querySelectorAll('button')].forEach(b=>b.disabled=true);
+
+      try {
+        const api = `https://api.nvidiabotz.xyz/download/yt${type}?url=${encodeURIComponent(url)}`;
+        const res = await fetch(api);
+        const json = await res.json();
+
+        if (!json.status || !json.result) throw new Error('Gagal mendapatkan link.');
+
+        const a = document.createElement('a');
+        a.href = json.result;
+        a.download = '';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        showToast();
+      } catch (e) {
+        alert(e.message || 'Server error');
+      } finally {
+        loading.style.display = 'none';
+        [...document.querySelectorAll('button')].forEach(b=>b.disabled=false);
+      }
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.style.display = 'block';
+      setTimeout(()=>toast.style.display='none',3000);
+    }
+  </script>
+</body>
+        </html>
