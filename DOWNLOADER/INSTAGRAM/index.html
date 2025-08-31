@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Instagram Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent1:#feda75;
+      --accent2:#d62976;
+      --accent3:#962fbf;
+      --accent4:#4f5bd5;
+      --radius:14px;
+      --shadow:0 0 18px rgba(255,0,150,.4);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
+    body{
+      background:#0d0d0f;
+      color:#fff;
+      padding:20px;
+    }
+    h1{
+      text-align:center;
+      font-size:32px;
+      font-weight:800;
+      margin:0 0 30px;
+      background:linear-gradient(45deg,var(--accent1),var(--accent2),var(--accent3),var(--accent4));
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      text-shadow:0 0 12px rgba(255,0,150,.6);
+    }
+    .form{
+      max-width:520px;
+      margin:0 auto 30px;
+    }
+    .form input[type=url]{
+      width:100%;
+      padding:14px 16px;
+      border:2px solid var(--accent4);
+      border-radius:var(--radius);
+      font-size:16px;
+      background:#1c1c1f;
+      color:#fff;
+      outline:none;
+      box-shadow:0 0 10px rgba(79,91,213,.5);
+    }
+    .form button{
+      width:100%;
+      padding:14px;
+      margin-top:12px;
+      border:none;
+      border-radius:var(--radius);
+      font-size:16px;
+      font-weight:600;
+      cursor:pointer;
+      background:linear-gradient(45deg,var(--accent1),var(--accent2),var(--accent3),var(--accent4));
+      color:#fff;
+      box-shadow:0 0 15px rgba(214,41,118,.7);
+      transition:.25s;
+    }
+    .form button:hover{
+      transform:scale(1.04);
+      box-shadow:0 0 25px rgba(214,41,118,.9);
+    }
+    .form button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+    .loading{
+      display:none;
+      justify-content:center;
+      align-items:center;
+      height:100px;
+    }
+    .loading span{
+      width:14px;height:14px;
+      margin:0 5px;
+      border-radius:50%;
+      background:linear-gradient(45deg,var(--accent2),var(--accent3));
+      animation:dot 1.2s infinite ease-in-out both;
+      box-shadow:0 0 12px rgba(214,41,118,.8);
+    }
+    .loading span:nth-child(1){animation-delay:-.32s}
+    .loading span:nth-child(2){animation-delay:-.16s}
+    @keyframes dot{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+
+    .grid{
+      display:grid;
+      gap:20px;
+      max-width:1100px;
+      margin:0 auto 50px;
+    }
+    @media(min-width:600px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+
+    /* Card */
+    .card{
+      background:#16161a;
+      border-radius:var(--radius);
+      box-shadow:0 0 14px rgba(150,47,191,.5);
+      overflow:hidden;
+      transform:translateY(30px);
+      opacity:0;
+      animation:fadeInUp .6s forwards;
+    }
+    @keyframes fadeInUp {
+      0% {opacity:0; transform:translateY(30px);}
+      100% {opacity:1; transform:translateY(0);}
+    }
+    .card:hover{
+      transform:translateY(-6px) scale(1.02);
+      box-shadow:0 0 28px rgba(214,41,118,.8);
+    }
+    .card img{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
+      display:block;
+    }
+    .card .info{
+      padding:14px 16px;
+    }
+    .card .type{
+      display:inline-block;
+      font-size:13px;
+      margin-bottom:8px;
+      padding:3px 8px;
+      border-radius:10px;
+      background:linear-gradient(45deg,var(--accent2),var(--accent3));
+      color:#fff;
+      box-shadow:0 0 8px rgba(214,41,118,.7);
+    }
+    .card .btn{
+      display:block;
+      width:100%;
+      padding:10px;
+      margin-top:10px;
+      border-radius:10px;
+      background:linear-gradient(45deg,var(--accent3),var(--accent4));
+      color:#fff;
+      text-align:center;
+      text-decoration:none;
+      font-weight:600;
+      font-size:14px;
+      box-shadow:0 0 12px rgba(79,91,213,.8);
+      transition:.25s;
+    }
+    .card .btn:hover{
+      transform:scale(1.05);
+      box-shadow:0 0 22px rgba(79,91,213,1);
+    }
+
+    footer{
+      text-align:center;
+      font-size:14px;
+      color:#aaa;
+      margin-top:30px;
+    }
+    footer span{
+      color:#d62976;
+      text-shadow:0 0 6px rgba(214,41,118,.8);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Instagram Downloader</h1>
+
+  <div class="form">
+    <input id="url" type="url" placeholder="https://www.instagram.com/p/xxxxx" required>
+    <button id="btn" onclick="dl()">Download</button>
+  </div>
+
+  <div class="loading" id="loading">
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="grid" id="result"></div>
+
+  <footer>
+    © 2025 <span>Reseller Gaming Programmer</span> | Tools Instagram Downloader
+  </footer>
+
+  <script>
+    async function dl() {
+      const url = document.getElementById('url').value.trim();
+      if (!url) return alert('Masukkan link Instagram!');
+
+      const btn   = document.getElementById('btn');
+      const load  = document.getElementById('loading');
+      const resEl = document.getElementById('result');
+
+      btn.disabled = true;
+      load.style.display = 'flex';
+      resEl.innerHTML   = '';
+
+      try {
+        const api = `https://api.nvidiabotz.xyz/download/instagram?url=${encodeURIComponent(url)}`;
+        const res = await fetch(api);
+        const json = await res.json();
+
+        if (!json.status || !json.result?.length) throw new Error('Tidak ada media ditemukan');
+
+        json.result.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.animationDelay = `${idx * 0.15}s`; // delay animasi per card
+
+          const img = document.createElement('img');
+          img.src   = item.thumbnail;
+          img.alt   = `Media ${idx + 1}`;
+
+          const info = document.createElement('div');
+          info.className = 'info';
+
+          const type = document.createElement('div');
+          type.className = 'type';
+          type.textContent = item.kualitas || item.type || 'Media';
+
+          const btnDl = document.createElement('a');
+          btnDl.className = 'btn';
+          btnDl.href      = item.url_download;
+          btnDl.download  = '';
+          btnDl.textContent = `Download #${idx + 1}`;
+
+          info.append(type, btnDl);
+          card.append(img, info);
+          resEl.appendChild(card);
+        });
+
+      } catch (e) {
+        alert(e.message || 'Server error');
+      } finally {
+        btn.disabled = false;
+        load.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+  </html>
