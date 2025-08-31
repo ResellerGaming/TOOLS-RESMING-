@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NEXUS GAME | Reseller Gaming Programmer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(circle at center, #1e1e2f 0%, #0f0c29 100%);
+      overflow-x: hidden;
+      color: #fff;
+    }
+
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #00dbde, #fc00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: glow 2s infinite alternate;
+      margin: 20px 0 40px;
+      text-align: center;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00dbde; }
+      to   { text-shadow: 0 0 20px #fc00ff; }
+    }
+
+    .btn {
+      padding: 16px 40px;
+      margin: 10px 0;
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      font-weight: 700;
+      letter-spacing: 1px;
+      background: transparent;
+      color: #fff;
+      border: 2px solid #00dbde;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: #00dbde;
+      color: #0f0c29;
+      box-shadow: 0 0 20px #00dbde;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-content {
+      background: #1e1e2f;
+      padding: 30px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 0 30px #00dbde;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+    }
+
+    .close {
+      margin-top: 20px;
+      padding: 10px 25px;
+      background: #fc00ff;
+      border: none;
+      border-radius: 30px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .close:hover {
+      background: #00dbde;
+    }
+
+    .game-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 900px;
+      margin-top: 20px;
+    }
+
+    .game-card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 15px;
+      transition: transform 0.3s ease;
+      text-align: center;
+    }
+
+    .game-card:hover {
+      transform: scale(1.03);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    footer {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #888;
+      z-index: 3;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+        justify-content: flex-start;
+      }
+
+      .game-list {
+        grid-template-columns: 1fr;
+      }
+
+      .btn {
+        padding: 18px 20px;
+        font-size: 1.1rem;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+        margin: 15px 0 25px;
+      }
+
+      .modal-content {
+        padding: 20px;
+        margin: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="particles-js"></div>
+
+  <!-- Menu Utama -->
+  <div class="container" id="menu-page">
+    <h1>NEXUS GAME</h1>
+
+    <button class="btn" onclick="showGames()">Play</button>
+    <button class="btn" onclick="openModal('settings')">Settings</button>
+    <button class="btn" onclick="openModal('about')">About</button>
+    <button class="btn" onclick="exitGame()">Exit</button>
+  </div>
+
+  <!-- Halaman Pilih Game -->
+  <div class="container" id="games-page" style="display: none;">
+    <h1>Pilih Game</h1>
+    <div class="game-list">
+      <div class="game-card">
+        <h3>Asah Otak</h3>
+        <button class="btn" onclick="goTo('/GAMES/ASAHOTAK')">Mainkan</button>
+      </div>
+      <div class="game-card">
+        <h3>Family 100</h3>
+        <button class="btn" onclick="goTo('/GAMES/FAMILY100')">Mainkan</button>
+      </div>
+      <div class="game-card">
+        <h3>Tebak Karakter FF</h3>
+        <button class="btn" onclick="goTo('/GAMES/KARAKTER-FF')">Mainkan</button>
+      </div>
+      <div class="game-card">
+        <h3>Lengkapi Kalimat</h3>
+        <button class="btn" onclick="goTo('/GAMES/LENGKAPIKALIMAT')">Mainkan</button>
+      </div>
+      <div class="game-card">
+        <h3>Matematika</h3>
+        <button class="btn" onclick="goTo('/GAMES/MATEMATIKA')">Mainkan</button>
+      </div>
+      <div class="game-card">
+        <h3>Siapa kah Aku?</h3>
+        <button class="btn" onclick="goTo('/GAMES/SIAPAAKU')">Mainkan</button>
+      </div>
+      <div class="game-card">
+        <h3>Susun Kata</h3>
+        <button class="btn" onclick="goTo('/GAMES/SUSUNKATA')">Mainkan</button>
+      </div>
+      <div class="game-card">
+        <h3>Tebak Gambar</h3>
+        <button class="btn" onclick="goTo('/GAMES/TEBAKGAMBAR')">Mainkan</button>
+      </div>
+    </div>
+    <button class="btn" onclick="backToMenu()" style="margin-top: 30px;">Back to Menu</button>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal" id="settings">
+    <div class="modal-content">
+      <h2>Settings</h2>
+      <p>Audio, Graphics, & Controls — coming soon!</p>
+      <button class="close" onclick="closeModal('settings')">Close</button>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal" id="about">
+    <div class="modal-content">
+      <h2>About</h2>
+      <p>Nexus Game v1.0<br>
+      Built with ❤️ by <strong>Reseller Gaming Programmer</strong></p>
+      <button class="close" onclick="closeModal('about')">Close</button>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Reseller Gaming Programmer. All rights reserved.
+  </footer>
+
+  <!-- Particle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script>
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 60, density: { enable: true, value_area: 800 } },
+        color: { value: '#00dbde' },
+        shape: { type: 'circle' },
+        opacity: { value: 0.5, random: true },
+        size: { value: 3, random: true },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: '#00dbde',
+          opacity: 0.4,
+          width: 1
+        },
+        move: {
+          enable: true,
+          speed: 2,
+          direction: 'none',
+          random: false,
+          straight: false,
+          out_mode: 'out',
+          bounce: false
+        }
+      },
+      interactivity: {
+        detect_on: 'canvas',
+        events: {
+          onhover: { enable: true, mode: 'repulse' },
+          onclick: { enable: true, mode: 'push' }
+        }
+      }
+    });
+
+    /* Audio */
+    const hoverSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3');
+    const clickSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3');
+    hoverSound.volume = 0.3;
+    clickSound.volume = 0.3;
+
+    document.querySelectorAll('.btn, .close').forEach(btn => {
+      btn.addEventListener('mouseenter', () => hoverSound.play());
+      btn.addEventListener('click', () => clickSound.play());
+    });
+
+    /* Navigation */
+    function showGames() {
+      clickSound.play();
+      document.getElementById('menu-page').style.display = 'none';
+      document.getElementById('games-page').style.display = 'flex';
+    }
+
+    function backToMenu() {
+      clickSound.play();
+      document.getElementById('games-page').style.display = 'none';
+      document.getElementById('menu-page').style.display = 'flex';
+    }
+
+    function openModal(id) {
+      clickSound.play();
+      document.getElementById(id).style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      clickSound.play();
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function goTo(path) {
+      clickSound.play();
+      window.location.href = path;
+    }
+
+    function exitGame() {
+      clickSound.play();
+      if (confirm("Yakin ingin keluar?")) {
+        window.close();
+      }
+    }
+  </script>
+
+</body>
+  </html>
