@@ -2,362 +2,301 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard Tools Resming</title>
+  <title>Tools Downloader</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- ICONS (pakai Remixicon biar simple) -->
-  <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
-
   <style>
-    :root {
-      --bg-light: #f5f7fa;
-      --text-light: #222;
-      --card-light: #fff;
-      --bg-dark: #0a0a1a;
-      --text-dark: #f5f5f5;
-      --card-dark: #1b1b2f;
-      --accent: #ffcc00;
+    /* GLOBAL */
+    body,html {
+      margin:0; padding:0;
+      font-family: Arial, sans-serif;
+      background:#000;
+      color:#fff;
+      overflow:hidden;
     }
 
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-light);
-      color: var(--text-light);
-      transition: 0.3s ease;
+    /* STARFIELD CANVAS */
+    #starfield {
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      z-index:-1;
+      background:#000;
     }
 
-    body.dark {
-      background: var(--bg-dark);
-      color: var(--text-dark);
+    /* WELCOME PAGE */
+    #welcome {
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.9);
+      display:flex; flex-direction:column;
+      justify-content:center; align-items:center;
+      z-index:10;
+      text-align:center;
+    }
+    #welcome img {
+      width:120px; height:120px;
+      border-radius:50%;
+      border:3px solid red;
+      box-shadow:0 0 20px red;
+      margin-bottom:20px;
+    }
+    .typing {
+      font-size:20px;
+      color:#ff1c1c;
+      text-shadow:0 0 10px #ff1c1c,0 0 20px #ff1c1c;
+      white-space:nowrap;
+      border-right:2px solid #ff1c1c;
+      overflow:hidden;
+      width:0;
+      animation:typing 4s steps(40,end) forwards, blink 0.7s step-end infinite;
+    }
+    @keyframes typing { from { width:0; } to { width:100%; } }
+    @keyframes blink { 50% { border-color:transparent; } }
+    #startBtn {
+      display:none;
+      margin-top:30px;
+      padding:12px 25px;
+      font-size:18px;
+      color:#fff;
+      background:#ff1c1c;
+      border:none;
+      border-radius:25px;
+      cursor:pointer;
+      text-transform:uppercase;
+      box-shadow:0 0 15px #ff1c1c, 0 0 30px #ff1c1c;
+      transition:0.3s;
+    }
+    #startBtn:hover {
+      background:#ff3b3b;
+      box-shadow:0 0 25px #ff3b3b, 0 0 50px #ff3b3b;
     }
 
-    /* --- Overlay Iklan Transparan --- */
-    .ad-overlay {
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.3); /* transparan, halaman utama tetap terlihat */
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
+    /* LOADING SCREEN */
+    #loadingScreen {
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      display:none;
+      justify-content:center; align-items:center;
+      flex-direction:column;
+      background:rgba(0,0,0,0.95);
+      z-index:20;
+    }
+    .loader {
+      border:8px solid #222;
+      border-top:8px solid #ff1c1c;
+      border-radius:50%;
+      width:70px; height:70px;
+      animation:spin 1s linear infinite;
+      box-shadow:0 0 20px #ff1c1c;
+      margin-bottom:20px;
+    }
+    @keyframes spin {
+      0% { transform:rotate(0deg); }
+      100% { transform:rotate(360deg); }
+    }
+    .loader-text {
+      font-size:18px;
+      color:#ff1c1c;
+      text-shadow:0 0 10px #ff1c1c;
+      letter-spacing:2px;
+      animation:pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50% { opacity:0.4; }
     }
 
-    .ad-content {
-      position: relative;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 350px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      text-align: center;
-      animation: fadeIn 0.5s ease;
-    }
+    /* MAIN PAGE */
+    #main { display:none; padding:20px; overflow-y:auto; height:100vh; }
 
-    /* Animasi muncul */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
+    header { text-align:center; margin-bottom:20px; }
+    header img {
+      width:100px; height:100px;
+      border-radius:50%; border:3px solid red;
+      box-shadow:0 0 20px red;
     }
-
-    /* Tombol silang */
-    .close-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: transparent;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      color: #333;
-    }
-
-    .ad-content h2 {
-      font-size: 20px;
-      margin-bottom: 8px;
-      color: #222;
-    }
-
-    .ad-content p {
-      font-size: 14px;
-      margin-bottom: 12px;
-      color: #555;
-    }
-
-    .ad-content img {
-      width: 100%;
-      border-radius: 8px;
-    }
-
-    /* Bintang Kilau ✨ */
-    .stars {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      top: 0; left: 0;
-      z-index: -1;
-      overflow: hidden;
-    }
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: blink 2s infinite;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 1; transform: scale(1.5); }
-    }
-
-    /* Header */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 30px;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    body.dark header { background: rgba(20, 20, 40, 0.8); }
-
     header h1 {
-      font-size: 20px;
+      margin:10px 0; font-size:24px;
+      color:#ff1c1c; text-shadow:0 0 10px #ff1c1c;
     }
-    .mode-toggle {
-      cursor: pointer;
-      font-size: 22px;
+    header p { font-size:14px; color:#ccc; }
+
+    .marquee { width:100%; overflow:hidden; white-space:nowrap; margin:15px 0; }
+    .marquee span {
+      display:inline-block; padding-left:100%;
+      animation:marquee 15s linear infinite;
+      color:#ff1c1c; text-shadow:0 0 10px #ff1c1c;
+    }
+    @keyframes marquee { 0%{ transform:translateX(0);} 100%{ transform:translateX(-100%);} }
+
+    .search-box { display:flex; justify-content:center; margin:20px 0; }
+    .search-box input {
+      padding:10px; width:60%; max-width:300px;
+      border-radius:20px; border:none;
+      outline:none; text-align:center;
+      box-shadow:0 0 10px red;
     }
 
-    /* Hero */
-    .hero {
-      text-align: center;
-      padding: 50px 20px;
-    }
-    .hero h2 { font-size: 28px; margin-bottom: 10px; }
-    .stats { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
-    .stat { font-size: 18px; font-weight: bold; color: var(--accent); }
-
-    /* Categories */
-    .categories {
-      text-align: center;
-      margin: 30px 0;
-    }
-    .categories button {
-      margin: 5px;
-      padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      background: var(--accent);
-      color: #000;
-      transition: 0.3s;
-    }
-    .categories button.active { background: #ffaa00; }
-
-    /* Tools Grid */
     .tools {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      padding: 0 20px 60px;
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:15px;
     }
-    .tool-card {
-      background: var(--card-light);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      transition: 0.3s;
+    .card {
+      background:#111; padding:15px; border-radius:15px;
+      box-shadow:0 0 10px #ff1c1c;
+      text-align:center; transition:0.3s;
     }
-    body.dark .tool-card { background: var(--card-dark); }
-    .tool-card:hover { transform: translateY(-6px); }
-    .tool-logo { width: 50px; margin-bottom: 10px; }
-    .tool-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
-    .tool-desc { font-size: 14px; color: gray; margin-bottom: 15px; }
+    .card:hover { transform:translateY(-5px); box-shadow:0 0 20px #ff3b3b; }
+    .card h3 { color:#ff1c1c; margin-bottom:10px; }
+    .card p { font-size:14px; color:#ccc; margin-bottom:10px; }
+    .card a {
+      display:inline-block; padding:8px 15px;
+      background:#ff1c1c; color:#fff; text-decoration:none;
+      border-radius:20px; box-shadow:0 0 10px #ff1c1c;
+      transition:0.3s;
+    }
+    .card a:hover { background:#ff3b3b; box-shadow:0 0 20px #ff3b3b; }
 
-    .start-btn {
-      display: inline-block;
-      padding: 10px 20px;
-      background: var(--accent);
-      border-radius: 8px;
-      text-decoration: none;
-      color: #000;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    .start-btn:hover { background: #ffaa00; }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 30px 20px;
-      border-top: 1px solid rgba(0,0,0,0.1);
-    }
-    body.dark footer { border-top: 1px solid rgba(255,255,255,0.1); }
-    .socials a {
-      margin: 0 8px;
-      font-size: 22px;
-      color: var(--accent);
-      text-decoration: none;
-    }
-    .copy { margin-top: 10px; font-size: 14px; }
+    footer { text-align:center; margin-top:30px; font-size:13px; color:#777; }
   </style>
 </head>
 <body>
-  
 
-  <!-- Iklan -->
-  <div class="ad-overlay" id="adOverlay">
-    <div class="ad-content">
-      <button class="close-btn" onclick="closeAd()">✖</button>
-      <h2>Selamat Datang 🎉</h2>
-      <p>Selamat datang dashboard tools Reseller Gaming. Mohon bantu dan support lewat donate di saweria atau qris yang dibawah ini. link donate ada di link bio (bio.resellergaming.my.id) dan terima kasih yang sudah support.</p>
-      <img src="/IMAGE/qris.png" alt="Iklan">
-    </div>
-  </div>
+<canvas id="starfield"></canvas>
 
-  <!-- Background Bintang -->
-  <div class="stars" id="stars"></div>
+<!-- WELCOME -->
+<div id="welcome">
+  <img src="profile.jpg" alt="Profile">
+  <div class="typing">WELCOME TO TOOLS DOWNLOADER</div>
+  <div class="typing">BERBAGAI APLIKASI</div>
+  <div class="typing">MADE IN RESELLER GAMING PROGRAMER</div>
+  <button id="startBtn" onclick="showLoading()">Start</button>
+</div>
 
-  <!-- HEADER -->
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="loader"></div>
+  <div class="loader-text">Loading...</div>
+</div>
+
+<!-- AUDIO -->
+<audio id="bgMusic" loop>
+  <source src="link-mp3.mp3" type="audio/mpeg">
+</audio>
+
+<!-- MAIN -->
+<div id="main">
   <header>
-    <h1>Dashboard Tools Resming</h1>
-    <div class="mode-toggle" id="modeToggle"><i class="ri-moon-line"></i></div>
+    <img src="profile.jpg" alt="Profile">
+    <h1>Reseller Gaming Programer</h1>
+    <p>Website ini menyediakan berbagai tools downloader gratis tanpa iklan</p>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <h2>Selamat Datang di Dashboard Tools Reseller Gaming</h2>
-    <p>Gunakan tools downloader, pterodactyl, ai,dan layanan tools lainnya dengan mudah.</p>
-    <div class="stats">
-      <div class="stat" id="statCat">4 Kategori</div>
-      <div class="stat" id="statEnd">6 Endpoint</div>
-    </div>
-  </section>
-
-  <!-- CATEGORIES -->
-  <div class="categories">
-    <button class="active" data-category="all">All</button>
-    <button data-category="downloader">Downloader</button>
-    <button data-category="tools">Tools</button>
-    <button data-category="games">Games</button>
-    <button data-category="ai">AI</button>
-    <button data-category="random">Random</button>
+  <!-- Marquee -->
+  <div class="marquee">
+    <span>Selamat datang di alat bantuan gratis yang dibuat oleh Reseller Gaming Programer untuk mempermudah anda dan website ini tanpa iklan. Jangan lupa support developer website ini dengan donasi lewat saweria.</span>
   </div>
 
-  <!-- TOOLS GRID -->
-  <div class="tools" id="toolsGrid">
-    <!-- Example Endpoint Card -->
-    <div class="tool-card" data-category="downloader">
-      <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" class="tool-logo">
-      <div class="tool-title">Instagram Downloader</div>
-      <div class="tool-desc">Download foto & video Instagram.</div>
-      <a href="/DOWNLOADER/INSTAGRAM/" class="start-btn">Start</a>
-    </div>
+  <!-- Search -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Cari tools...">
+  </div>
 
-    <div class="tool-card" data-category="downloader">
-      <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="tool-logo">
-      <div class="tool-title">YouTube Downloader</div>
-      <div class="tool-desc">Unduh video YouTube jadi MP4/MP3.</div>
-      <a href="/DOWNLOADER/YOUTUBE/" class="start-btn">Start</a>
+  <!-- Tools -->
+  <div class="tools" id="toolsList">
+    <div class="card">
+      <h3>TikTok Downloader</h3>
+      <p>Download video TikTok tanpa watermark</p>
+      <a href="/TIKTOK/">Mulai</a>
     </div>
-
-    <div class="tool-card" data-category="downloader">
-      <img src="https://files.catbox.moe/opnksa.jpeg" class="tool-logo">
-      <div class="tool-title">Tiktok Downloader</div>
-      <div class="tool-desc">download vidio atau foto di tiktok</div>
-      <a href="/DOWNLOADER/TIKTOK/" class="start-btn">Start</a>
+    <div class="card">
+      <h3>Instagram Downloader</h3>
+      <p>Simpan foto & video Instagram</p>
+      <a href="/INSTAGRAM/">Mulai</a>
     </div>
-
-    <div class="tool-card" data-category="games">
-      <img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="tool-logo">
-      <div class="tool-title">Game Checker</div>
-      <div class="tool-desc">Cek status server game favorit.</div>
-      <a href="/games/checker/" class="start-btn">Start</a>
+    <div class="card">
+      <h3>YouTube MP3/MP4</h3>
+      <p>Download audio atau video dari YouTube</p>
+      <a href="/YOUTUBE/">Mulai</a>
     </div>
-
-    <div class="tool-card" data-category="api">
-      <img src="https://cdn-icons-png.flaticon.com/512/4248/4248443.png" class="tool-logo">
-      <div class="tool-title">Weather API</div>
-      <div class="tool-desc">Cek cuaca real-time via endpoint API.</div>
-      <a href="/api/weather" class="start-btn">Start</a>
-    </div>
-
-    <div class="tool-card" data-category="api">
-      <img src="https://cdn-icons-png.flaticon.com/512/1827/1827504.png" class="tool-logo">
-      <div class="tool-title">Currency API</div>
-      <div class="tool-desc">Konversi mata uang via endpoint.</div>
-      <a href="/api/currency" class="start-btn">Start</a>
-    </div>
-    
-    <div class="tool-card" data-category="ai">
-      <img src="https://cdn-icons-png.flaticon.com/512/4248/4248443.png" class="tool-logo">
-      <div class="tool-title">AI Resming</div>
-      <div class="tool-desc">Layanan AI dari berbagai AI untuk membantu anda.</div>
-      <a href="/AI/" class="start-btn">Start</a>
+    <div class="card">
+      <h3>Masih binggung</h3>
+      <p>Masih binggung mau bikin tools downloader apa lagi 😅</p>
+      <a href="/YTMP3/">Coming Soon</a>
     </div>
   </div>
 
-  <!-- FOOTER -->
   <footer>
-    <div class="socials">
-      <a href="https://whatsapp.com/channel/0029VbAt2GM7j6g6d13Xx01X"><i class="ri-whatsapp-fill"></i></a>
-      <a href="https://t.me/ResellerGamingoffcial"><i class="ri-telegram-fill"></i></a>
-      <a href="https://www.tiktok.com/@reseller_gaming?_t=ZS-8zJ7VMImDiB&_r=1"><i class="ri-tiktok-fill"></i></a>
-      <a href="https://x.com/me_ahmadi_?t=5j080LbxWHbdFgzZwmdHSQ&s=09"><i class="ri-twitter-x-fill"></i></a>
-      <a href="https://www.instagram.com/my_m.ahmadi?igsh=MTJyendvczFvOHVjeQ=="><i class="ri-instagram-fill"></i></a>
-    </div>
-    <div class="copy">© 2025 Reseller Gaming Programer</div>
+    &copy; 2025 Reseller Gaming Programer
   </footer>
+</div>
 
-  <script>
-        function closeAd() {
-      document.getElementById("adOverlay").style.display = "none";
-    }
-    
-    // Dark Mode Toggle
-    const modeToggle = document.getElementById("modeToggle");
-    modeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("dark");
-      modeToggle.innerHTML = document.body.classList.contains("dark") 
-        ? '<i class="ri-sun-line"></i>' 
-        : '<i class="ri-moon-line"></i>';
+<script>
+  // delay tampilkan tombol START setelah typing selesai
+  setTimeout(()=>{ document.getElementById("startBtn").style.display="inline-block"; }, 4500);
+
+  function showLoading() {
+    document.getElementById("welcome").style.display="none";
+    document.getElementById("loadingScreen").style.display="flex";
+
+    // simulasi loading 3 detik
+    setTimeout(()=>{
+      document.getElementById("loadingScreen").style.display="none";
+      document.getElementById("main").style.display="block";
+      document.getElementById("bgMusic").play();
+    },3000);
+  }
+
+  // search realtime
+  const input = document.getElementById("searchInput");
+  input.addEventListener("keyup", ()=>{
+    let filter = input.value.toLowerCase();
+    let cards = document.querySelectorAll("#toolsList .card");
+    cards.forEach(c=>{
+      let t = c.querySelector("h3").textContent.toLowerCase();
+      let d = c.querySelector("p").textContent.toLowerCase();
+      c.style.display = (t.includes(filter)||d.includes(filter)) ? "block" : "none";
     });
+  });
 
-    // Filter Kategori
-    const buttons = document.querySelectorAll('.categories button');
-    const cards = document.querySelectorAll('.tool-card');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        buttons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const category = btn.getAttribute('data-category');
-        cards.forEach(card => {
-          if (category === "all" || card.dataset.category === category) {
-            card.style.display = "block";
-          } else {
-            card.style.display = "none";
-          }
-        });
-      });
-    });
-
-    // Generate Bintang
-    const starsContainer = document.getElementById("stars");
-    for (let i = 0; i < 100; i++) {
-      let star = document.createElement("div");
-      star.classList.add("star");
-      star.style.top = Math.random() * 100 + "%";
-      star.style.left = Math.random() * 100 + "%";
-      star.style.animationDuration = (1 + Math.random() * 2) + "s";
-      starsContainer.appendChild(star);
+  // STARFIELD ANIMATION
+  const canvas = document.getElementById("starfield");
+  const ctx = canvas.getContext("2d");
+  let stars = [];
+  let w,h;
+  function resize(){
+    w=canvas.width=window.innerWidth;
+    h=canvas.height=window.innerHeight;
+    stars = [];
+    for(let i=0;i<150;i++){
+      stars.push({x:Math.random()*w,y:Math.random()*h,z:Math.random()*w});
     }
-  </script>
+  }
+  window.onresize=resize;
+  resize();
+
+  function animate(){
+    ctx.fillStyle="#000";
+    ctx.fillRect(0,0,w,h);
+    for(let i=0;i<stars.length;i++){
+      let s = stars[i];
+      s.z-=2;
+      if(s.z<=0){ s.x=Math.random()*w; s.y=Math.random()*h; s.z=w; }
+      let k=128.0/s.z;
+      let px=s.x*k+w/2;
+      let py=s.y*k+h/2;
+      if(px>=0 && px<=w && py>=0 && py<=h){
+        let size=(1-s.z/w)*3;
+        ctx.fillStyle="rgba(255,30,30,1)";
+        ctx.beginPath();
+        ctx.arc(px,py,size,0,Math.PI*2);
+        ctx.fill();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+</script>
+
 </body>
 </html>
