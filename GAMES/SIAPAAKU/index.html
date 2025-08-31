@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Siapa Aku? – Game Tantangan Tebak!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg: #0f0f1a;
+      --card: rgba(255,255,255,.08);
+      --text: #ffffff;
+      --accent1: #00ffe7;
+      --accent2: #ff00e5;
+      --danger: #ff4d4d;
+      --success: #00ff88;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+    body{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--bg);
+      color:var(--text);
+      padding:20px;
+    }
+    .card{
+      width:100%;
+      max-width:480px;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.15);
+      border-radius:20px;
+      backdrop-filter:blur(12px);
+      padding:40px 30px;
+      text-align:center;
+      box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    h1{font-size:28px;margin-bottom:20px;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    input[type="text"]{
+      width:100%;
+      padding:14px 18px;
+      border-radius:12px;
+      border:none;
+      outline:none;
+      font-size:16px;
+      background:rgba(255,255,255,.1);
+      color:#fff;
+      margin-bottom:20px;
+    }
+    input::placeholder{color:rgba(255,255,255,.6);}
+    .btn{
+      width:100%;
+      padding:14px;
+      font-size:16px;
+      font-weight:600;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.3s;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,var(--accent1),var(--accent2));
+      color:#000;
+    }
+    .btn:hover{opacity:.9;transform:translateY(-2px);}
+    .hidden{display:none;}
+    .clue{font-size:18px;line-height:1.6;margin-bottom:20px;}
+    .lives{font-size:14px;margin-bottom:15px;color:var(--danger);}
+    .result{margin-top:20px;font-size:18px;font-weight:600;}
+    .correct{color:var(--success);}
+    .wrong{color:var(--danger);}
+    .summary li{margin:6px 0;}
+  </style>
+</head>
+<body>
+  <!-- HALAMAN NAMA -->
+  <section id="nameSection" class="card">
+    <h1>Masukkan Namamu</h1>
+    <input id="playerName" type="text" placeholder="Nama kamu..." maxlength="20"/>
+    <button class="btn btn-primary" onclick="startGame()">Mulai Permainan</button>
+  </section>
+
+  <!-- HALAMAN PERMAINAN -->
+  <section id="gameSection" class="card hidden">
+    <h1 id="title">Siapa Aku?</h1>
+    <div id="roundInfo" style="margin-bottom:10px;font-size:14px;">Babak 1 / 5</div>
+    <div class="lives" id="lives">Kesempatan: 3</div>
+    <div class="clue" id="clue">Memuat soal...</div>
+    <input id="answer" type="text" placeholder="Jawaban..." autocomplete="off"/>
+    <button id="submitBtn" class="btn btn-primary" onclick="submitAnswer()">Jawab</button>
+    <div class="result" id="result"></div>
+  </section>
+
+  <!-- HALAMAN HASIL -->
+  <section id="finishSection" class="card hidden">
+    <h1>Permainan Selesai</h1>
+    <p id="scoreText"></p>
+    <ul class="summary" id="summary"></ul>
+    <button class="btn btn-primary" onclick="location.reload()">Main Lagi</button>
+  </section>
+
+<script>
+  const nameSec  = document.getElementById('nameSection');
+  const gameSec  = document.getElementById('gameSection');
+  const finSec   = document.getElementById('finishSection');
+  const clueEl   = document.getElementById('clue');
+  const answerEl = document.getElementById('answer');
+  const livesEl  = document.getElementById('lives');
+  const resultEl = document.getElementById('result');
+  const roundEl  = document.getElementById('roundInfo');
+
+  let player = '';
+  let round = 1;
+  let maxRounds = 5;
+  let lives = 3;
+  let current = {};
+  let history = [];
+
+  async function fetchClue(){
+    clueEl.textContent = 'Memuat...';
+    try{
+      const res = await fetch('https://api.siputzx.my.id/api/games/siapakahaku');
+      const json = await res.json();
+      return json.data;
+    }catch(err){
+      clueEl.textContent = 'Gagal memuat soal. Coba lagi.';
+    }
+  }
+
+  function startGame(){
+    player = document.getElementById('playerName').value.trim();
+    if(!player){ alert('Isi namamu dulu ya!'); return; }
+    nameSec.classList.add('hidden');
+    gameSec.classList.remove('hidden');
+    nextClue();
+  }
+
+  async function nextClue(){
+    resultEl.textContent='';
+    answerEl.value='';
+    current = await fetchClue();
+    lives = 3;
+    livesEl.textContent = `Kesempatan: ${lives}`;
+    clueEl.textContent = current.soal;
+    roundEl.textContent = `Babak ${round} / ${maxRounds}`;
+  }
+
+  function submitAnswer(){
+    const ans = answerEl.value.trim().toLowerCase();
+    if(!ans) return;
+    if(ans === current.jawaban.toLowerCase()){
+      history.push({round, clue:current.soal, guess:ans, correct:true});
+      resultEl.innerHTML = `<span class="correct">✅ Benar!</span>`;
+      setTimeout(()=>{
+        if(round < maxRounds){
+          round++;
+          nextClue();
+        }else{
+          endGame();
+        }
+      },1200);
+    }else{
+      lives--;
+      livesEl.textContent = `Kesempatan: ${lives}`;
+      if(lives === 0){
+        history.push({round, clue:current.soal, guess:ans, correct:false});
+        resultEl.innerHTML = `<span class="wrong">❌ Salah. Jawabannya: <b>${current.jawaban}</b></span>`;
+        setTimeout(()=>{
+          if(round < maxRounds){
+            round++;
+            nextClue();
+          }else{
+            endGame();
+          }
+        },2000);
+      }else{
+        resultEl.innerHTML = `<span class="wrong">❌ Salah, coba lagi!</span>`;
+      }
+    }
+  }
+
+  function endGame(){
+    gameSec.classList.add('hidden');
+    finSec.classList.remove('hidden');
+    const correct = history.filter(h=>h.correct).length;
+    document.getElementById('scoreText').textContent =
+      `Hai ${player}, kamu menjawab benar ${correct} dari ${maxRounds} soal!`;
+    const ul = document.getElementById('summary');
+    ul.innerHTML='';
+    history.forEach(h=>{
+      const li=document.createElement('li');
+      li.innerHTML=`Babak ${h.round}: <b>${h.correct ? '✅' : '❌'}</b> ${h.clue.substring(0,50)}...`;
+      ul.appendChild(li);
+    });
+  }
+</script>
+</body>
+  </html>
