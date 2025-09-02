@@ -24,7 +24,16 @@
       animation:gradientMove 8s ease infinite;
       padding:1rem;text-align:center;font-weight:700;font-size:1.3rem;
       text-shadow:0 0 12px rgba(0,194,255,.8);
-    }
+           display:flex;              /* Biar logo dan teks sejajar */
+        align-items:center;        /* Tengah vertikal */
+        justify-content:center;    /* Tengah horizontal */
+        gap:10px;                  /* Jarak logo dan teks */
+      }
+
+      header img{
+        width:30px;   /* ukuran logo */
+        height:30px;
+      }
     @keyframes gradientMove{
       0%{background-position:0% 50%}
       50%{background-position:100% 50%}
@@ -103,7 +112,10 @@
 </head>
 <body>
 
-<header>Reseller Gaming AI</header>
+<header>
+  <img src="logoai.png" alt="Logo">
+  Reseller Gaming AI
+</header>
 
 <div class="tabs">
   <button data-ai="wota" class="active">Wota Bot</button>
