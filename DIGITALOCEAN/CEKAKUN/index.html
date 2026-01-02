@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalOcean Account Status Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0080FF 0%, #0069D9 50%, #0051C7 100%);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #0080FF;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-active { background: linear-gradient(90deg, #10B981, #34D399); }
+        .status-warning { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+        .status-locked { background: linear-gradient(90deg, #EF4444, #F87171); }
+        
+        .api-input {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+    
+    <!-- Main Container -->
+    <div class="w-full max-w-4xl">
+        
+        <!-- Header -->
+        <div class="text-center mb-8 fade-in">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-4">
+                <i class="fab fa-digital-ocean text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">Account Status Checker</h1>
+            <p class="text-white/80 text-sm md:text-base">Periksa status akun DigitalOcean Anda secara real-time</p>
+        </div>
+        
+        <!-- API Key Input Card -->
+        <div id="inputCard" class="glass-card rounded-2xl p-6 md:p-8 mb-6 fade-in">
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-white mb-2">API Key Authentication</h2>
+                <p class="text-sm text-white/70">Masukkan Personal Access Token Anda</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="relative">
+                    <label class="block text-sm font-medium text-white/80 mb-2">API Token</label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="apiToken" 
+                            placeholder="dop_v1_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                            class="api-input w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all"
+                        >
+                        <button 
+                            type="button" 
+                            id="toggleToken" 
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-white/50 mt-2">
+                        <i class="fas fa-shield-alt mr-1"></i>
+                        Token disimpan di browser local storage. Hanya digunakan untuk API request.
+                    </p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button 
+                        id="checkBtn" 
+                        class="flex-1 bg-white/20 hover:bg-white/30 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 group"
+                    >
+                        <i class="fas fa-search group-hover:scale-110 transition-transform"></i>
+                        <span>Periksa Status</span>
+                    </button>
+                    
+                    <button 
+                        id="deleteBtn" 
+                        class="bg-red-500/20 hover:bg-red-500/30 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                        <i class="fas fa-trash"></i>
+                        <span>Hapus Token</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden glass-card rounded-2xl p-8 mb-6">
+            <div class="flex flex-col items-center justify-center">
+                <div class="loading-spinner mb-4"></div>
+                <p class="text-white font-medium">Mengambil data akun...</p>
+            </div>
+        </div>
+        
+        <!-- Error Alert -->
+        <div id="errorAlert" class="hidden bg-red-500/20 backdrop-blur-sm border border-red-500/30 rounded-lg p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-exclamation-triangle text-red-400 mt-1"></i>
+                <div class="flex-1">
+                    <p class="text-white font-semibold" id="errorTitle">Terjadi Kesalahan</p>
+                    <p class="text-white/80 text-sm" id="errorMessage"></p>
+                </div>
+                <button id="closeError" class="text-white/60 hover:text-white transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Result Card -->
+        <div id="resultCard" class="hidden glass-card rounded-2xl p-6 md:p-8 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl md:text-2xl font-semibold text-white">
+                    <i class="fas fa-user-circle mr-2"></i>Account Status
+                </h2>
+                <span id="statusBadge" class="px-3 py-1 rounded-full text-sm font-medium text-white status-active">
+                    <!-- Status akan di-update -->
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Email -->
+                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-envelope text-blue-400"></i>
+                        <span class="text-xs text-white/60 uppercase tracking-wider">Email</span>
+                    </div>
+                    <p id="emailValue" class="text-white font-medium">-</p>
+                </div>
+                
+                <!-- Email Verified -->
+                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-shield-check text-green-400"></i>
+                        <span class="text-xs text-white/60 uppercase tracking-wider">Email Verified</span>
+                    </div>
+                    <p id="emailVerifiedValue" class="text-white font-medium">-</p>
+                </div>
+                
+                <!-- Droplet Limit -->
+                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-server text-purple-400"></i>
+                        <span class="text-xs text-white/60 uppercase tracking-wider">Droplet Limit</span>
+                    </div>
+                    <p id="dropletLimitValue" class="text-white font-medium">-</p>
+                </div>
+                
+                <!-- Floating IP Limit -->
+                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-network-wired text-orange-400"></i>
+                        <span class="text-xs text-white/60 uppercase tracking-wider">Floating IP Limit</span>
+                    </div>
+                    <p id="floatingIpLimitValue" class="text-white font-medium">-</p>
+                </div>
+                
+                <!-- UUID -->
+                <div class="md:col-span-2 bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div class="flex items-center gap-3 mb-2">
+                        <i class="fas fa-fingerprint text-yellow-400"></i>
+                        <span class="text-xs text-white/60 uppercase tracking-wider">Account UUID</span>
+                    </div>
+                    <p id="uuidValue" class="text-white font-medium font-mono text-sm break-all">-</p>
+                </div>
+                
+                <!-- Status Message (jika ada) -->
+                <div id="statusMessageContainer" class="hidden md:col-span-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-info-circle text-yellow-400 mt-0.5"></i>
+                        <div>
+                            <p class="text-xs text-white/60 uppercase tracking-wider mb-1">Status Message</p>
+                            <p id="statusMessageValue" class="text-white"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t border-white/10">
+                <p class="text-xs text-white/50 text-center">
+                    <i class="fas fa-clock mr-1"></i>
+                    Data terakhir diperbarui: <span id="lastUpdated">-</span>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-8">
+            <p class="text-white/60 text-xs">
+                <i class="fas fa-lock mr-1"></i>
+                Token hanya disimpan di browser Anda. Tidak pernah dikirim ke server lain.
+            </p>
+            <p class="text-white/40 text-xs mt-2">
+                DigitalOcean API v2 | Rate Limit: 5,000 req/hour
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const apiTokenInput = document.getElementById('apiToken');
+        const toggleTokenBtn = document.getElementById('toggleToken');
+        const checkBtn = document.getElementById('checkBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const inputCard = document.getElementById('inputCard');
+        const loadingState = document.getElementById('loadingState');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorTitle = document.getElementById('errorTitle');
+        const errorMessage = document.getElementById('errorMessage');
+        const closeError = document.getElementById('closeError');
+        const resultCard = document.getElementById('resultCard');
+        const statusBadge = document.getElementById('statusBadge');
+        const lastUpdated = document.getElementById('lastUpdated');
+        
+        // Storage key
+        const STORAGE_KEY = 'do_api_token';
+        
+        // Load token from localStorage on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedToken = localStorage.getItem(STORAGE_KEY);
+            if (savedToken) {
+                apiTokenInput.value = savedToken;
+            }
+        });
+        
+        // Toggle token visibility
+        toggleTokenBtn.addEventListener('click', () => {
+            const type = apiTokenInput.type === 'password' ? 'text' : 'password';
+            apiTokenInput.type = type;
+            toggleTokenBtn.innerHTML = `<i class="fas fa-eye${type === 'password' ? '' : '-slash'}"></i>`;
+        });
+        
+        // Delete token
+        deleteBtn.addEventListener('click', () => {
+            localStorage.removeItem(STORAGE_KEY);
+            apiTokenInput.value = '';
+            resultCard.classList.add('hidden');
+            errorAlert.classList.add('hidden');
+            showNotification('Token berhasil dihapus dari local storage', 'success');
+        });
+        
+        // Close error alert
+        closeError.addEventListener('click', () => {
+            errorAlert.classList.add('hidden');
+        });
+        
+        // Check account status
+        checkBtn.addEventListener('click', async () => {
+            const token = apiTokenInput.value.trim();
+            
+            if (!token) {
+                showError('Token tidak boleh kosong', 'Masukkan Personal Access Token Anda');
+                return;
+            }
+            
+            if (!token.startsWith('dop_v1_')) {
+                showError('Format token tidak valid', 'Token harus diawali dengan dop_v1_');
+                return;
+            }
+            
+            // Save token
+            localStorage.setItem(STORAGE_KEY, token);
+            
+            // Show loading
+            inputCard.classList.add('hidden');
+            errorAlert.classList.add('hidden');
+            resultCard.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+            
+            try {
+                const response = await fetch('https://api.digitalocean.com/v2/account', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                // Check rate limit headers
+                const rateLimit = response.headers.get('RateLimit-Remaining');
+                const rateLimitReset = response.headers.get('RateLimit-Reset');
+                
+                if (response.status === 401) {
+                    throw new Error('Token tidak valid atau kadaluarsa. Periksa token Anda di Control Panel DigitalOcean.');
+                }
+                
+                if (response.status === 429) {
+                    const resetTime = new Date(parseInt(rateLimitReset) * 1000);
+                    throw new Error(`Rate limit terlampaui. Coba lagi setelah ${resetTime.toLocaleTimeString()}`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayAccountData(data.account);
+                
+            } catch (error) {
+                showError('Gagal mengambil data akun', error.message);
+            } finally {
+                loadingState.classList.add('hidden');
+                inputCard.classList.remove('hidden');
+            }
+        });
+        
+        // Display account data
+        function displayAccountData(account) {
+            // Update status badge
+            const status = account.status || 'active';
+            statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            statusBadge.className = `px-3 py-1 rounded-full text-sm font-medium text-white status-${status}`;
+            
+            // Update values
+            document.getElementById('emailValue').textContent = account.email || '-';
+            document.getElementById('emailVerifiedValue').textContent = account.email_verified ? '✅ Verified' : '❌ Not Verified';
+            document.getElementById('dropletLimitValue').textContent = account.droplet_limit || '-';
+            document.getElementById('floatingIpLimitValue').textContent = account.floating_ip_limit || '-';
+            document.getElementById('uuidValue').textContent = account.uuid || '-';
+            
+            // Show status message if exists
+            const statusMessageContainer = document.getElementById('statusMessageContainer');
+            const statusMessageValue = document.getElementById('statusMessageValue');
+            if (account.status_message) {
+                statusMessageValue.textContent = account.status_message;
+                statusMessageContainer.classList.remove('hidden');
+            } else {
+                statusMessageContainer.classList.add('hidden');
+            }
+            
+            // Update last updated time
+            const now = new Date();
+            lastUpdated.textContent = now.toLocaleString('id-ID');
+            
+            // Show result card
+            resultCard.classList.remove('hidden');
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Show error
+        function showError(title, message) {
+            errorTitle.textContent = title;
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+            errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-4 py-3 rounded-lg text-white font-medium z-50 ${
+                type === 'success' ? 'bg-green-500/90' : 'bg-blue-500/90'
+            } backdrop-blur-sm fade-in`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Enter key support
+        apiTokenInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkBtn.click();
+            }
+        });
+    </script>
+</body>
+                                                                                                                  </html>
+                      
