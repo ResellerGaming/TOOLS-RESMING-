@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skip Link - Reseller Gaming</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #0f0c29);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            width: 90%;
+            animation: fadeIn 0.8s ease-out;
+            margin: 20px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(0, 212, 255, 0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(255, 0, 255, 0.8)); }
+        }
+
+        .subtitle {
+            color: #b0b0b0;
+            font-size: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #00d4ff, #ff00ff);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #00d4ff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+
+        .result-content a {
+            color: #00d4ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .result-content a:hover {
+            color: #ff00ff;
+        }
+
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .supported {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+        }
+
+        .supported span {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin: 2px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #00d4ff;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #ff00ff;
+        }
+
+        .info-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-section h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .info-section ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            color: #e0e0e0;
+        }
+
+        .info-section strong {
+            color: #ff00ff;
+        }
+
+        .contact-info {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .contact-info h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .contact-info p {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .donate-btn {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .donate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Skip Link</h1>
+            <p class="subtitle">Tools Bypass Shortlink dengan Mudah</p>
+        </div>
+
+        <div class="input-group">
+            <label for="urlInput">Masukkan URL:</label>
+            <input type="text" id="urlInput" placeholder="https://ouo.io/ZH2ie7">
+        </div>
+
+        <div class="input-group">
+            <label for="apiKeyInput">API Key (Anda):</label>
+            <input type="password" id="apiKeyInput" placeholder="Kosongkan untuk menggunakan API default">
+        </div>
+
+        <button class="btn" id="skipBtn" onclick="skipLink()">
+            Bypass Link
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Memproses bypass link...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <h3>Hasil Bypass:</h3>
+            <div class="result-content" id="resultContent"></div>
+        </div>
+
+        <div class="supported">
+            <p>Support:</p>
+            <span>ouo.io</span>
+            <span>sfl.gl</span>
+            <span>subs4unlock.id</span>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <h2>📝 Cara Penggunaan</h2>
+            <ol>
+                <li><strong>Link yang mau di bypass</strong></li>
+                <li><strong>Wajib Ada Akun akun api dan apikey anda, ke website api <a href="https://fgsi.dpdns.org/docs" target="_blank">https://fgsi.dpdns.org/docs</a></strong></li>
+                <li><strong>Salin link yang ingin skip/bypass shortlink tersebut</strong></li>
+                <li><strong>Tempel apikey anda</strong></li>
+                <li><strong>Setelah itu pencet button "Bypass Link"</strong></li>
+                <li><strong>Tunggu prosesnya, setelah lihat hasilnya akan menjadi link</strong></li>
+                <li><strong>Bisa disalin terus di tempel langsung web atau langsung pencet link nanti otomatis ke link tersebut.</strong></li>
+                <li><strong>Done dan terimakasih ☺️</strong></li>
+            </ol>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="contact-info">
+            <h3>📢 INFORMASI 👤</h3>
+            <p><strong>Telegram Channel:</strong> <a href="https://t.me/codexengineer" target="_blank">https://t.me/codexengineer</a></p>
+            <p><strong>WhatsApp Channel:</strong> <a href="https://whatsapp.com/channel/0029VbAt2GM7yT25R7epR110" target="_blank">https://whatsapp.com/channel/0029VbAt2GM7yT25R7epR110</a></p>
+            <p><strong>Kreator:</strong> Reseller Gaming (Owner)</p>
+            
+            <a href="https://saweria.co/ahmadi02" target="_blank" class="donate-btn">
+                💸 Donate Via Saweria
+            </a>
+            
+            <p style="margin-top: 15px;"><strong>REPORT VIA BOT TELEGRAM</strong><br>
+            Username: <a href="https://t.me/repotcodexbot" target="_blank">@repotcodexbot</a></p>
+        </div>
+
+        <div class="footer">
+            <p>© 2026 <a href="https://whatsapp.com/channel/0029Vb4fjWE1yT25R7epR110" target="_blank">Reseller Gaming</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Simpan API key di localStorage
+        const savedApiKey = localStorage.getItem('apiKey');
+        if (savedApiKey) {
+            document.getElementById('apiKeyInput').value = savedApiKey;
+        }
+
+        // Fungsi untuk mendeteksi tipe shortlink
+        function detectLinkType(url) {
+            if (url.includes('ouo.io')) return 'ouo.io';
+            if (url.includes('sfl.gl') || url.includes('safelinkblogger')) return 'tutwuri';
+            if (url.includes('subs4unlock.id')) return 'sub4unlock';
+            return null;
+        }
+
+        // Fungsi utama untuk bypass link
+        async function skipLink() {
+            const urlInput = document.getElementById('urlInput');
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            const skipBtn = document.getElementById('skipBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+            const resultContent = document.getElementById('resultContent');
+
+            const url = urlInput.value.trim();
+            const apiKey = apiKeyInput.value.trim() || 'demo_key';
+
+            // Validasi input
+            if (!url) {
+                showError('❌ Masukkan URL shortlink!');
+                return;
+            }
+
+            // Deteksi tipe link
+            const linkType = detectLinkType(url);
+            if (!linkType) {
+                showError('❌ URL tidak didukung. Hanya support: ouo.io, sfl.gl, subs4unlock.id');
+                return;
+            }
+
+            // Simpan API key jika diisi
+            if (apiKey !== 'demo_key') {
+                localStorage.setItem('apiKey', apiKey);
+            }
+
+            // Tampilkan loading
+            skipBtn.disabled = true;
+            loading.classList.add('active');
+            result.classList.remove('show');
+            error.classList.remove('show');
+
+            try {
+                // Gunakan API proxy untuk menghindari CORS
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(
+                    `https://fgsi.dpdns.org/api/tools/skip/${linkType}?apikey=${apiKey}&url=${encodeURIComponent(url)}`
+                )}`);
+
+                if (!response.ok) {
+                    throw new Error('Gagal terhubung ke server');
+                }
+
+                const data = await response.json();
+                const resultData = JSON.parse(data.contents);
+
+                if (!resultData.status) {
+                    throw new Error(resultData.message || 'Gagal bypass link');
+                }
+
+                // Tampilkan hasil sesuai tipe
+                displayResult(linkType, resultData.data);
+
+            } catch (err) {
+                showError(`❌ ${err.message || 'Terjadi kesalahan. Pastikan URL valid dan API key benar.'}`);
+            } finally {
+                skipBtn.disabled = false;
+                loading.classList.remove('active');
+            }
+        }
+
+        // Fungsi untuk menampilkan hasil
+        function displayResult(type, data) {
+            const resultContent = document.getElementById('resultContent');
+            const result = document.getElementById('result');
+            
+            let html = `<p><strong>Tipe:</strong> ${type}</p>`;
+
+            if (type === 'ouo.io') {
+                html += `<p><strong>Direct Link:</strong><br><a href="${data}" target="_blank">${data}</a></p>`;
+            } else if (type === 'tutwuri') {
+                html += `<p><strong>Final URL:</strong><br><a href="${data.url}" target="_blank">${data.url}</a></p>`;
+                if (data.message) {
+                    html += `<p><strong>Message:</strong> ${data.message}</p>`;
+                }
+            } else if (type === 'sub4unlock') {
+                html += `<p><strong>Info:</strong></p>`;
+                html += `<ul>`;
+                html += `<li>ID: ${data.id}</li>`;
+                html += `<li>Deskripsi: ${data.description}</li>`;
+                html += `<li>Dibuat: ${data.created_at}</li>`;
+                html += `</ul>`;
+                
+                if (data.original) {
+                    const orig = data.original;
+                    if (orig['?ttl']) html += `<p><strong>Title:</strong> ${orig['?ttl']}</p>`;
+                    if (orig.sttl) html += `<p><strong>Subtitle:</strong> ${orig.sttl}</p>`;
+                    if (orig.yt) html += `<p><strong>YouTube:</strong> <a href="${orig.yt}" target="_blank">${orig.yt}</a></p>`;
+                    if (orig.wa) html += `<p><strong>WhatsApp:</strong> <a href="${orig.wa}" target="_blank">${orig.wa}</a></p>`;
+                    if (orig.ig) html += `<p><strong>Instagram:</strong> <a href="${orig.ig}" target="_blank">${orig.ig}</a></p>`;
+                }
+                
+                html += `<p><strong>Direct Link:</strong><br><a href="${data.linkGo}" target="_blank">${data.linkGo}</a></p>`;
+            }
+
+            resultContent.innerHTML = html;
+            result.classList.add('show');
+        }
+
+        // Fungsi untuk menampilkan error
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.classList.add('show');
+            setTimeout(() => {
+                error.classList.remove('show');
+            }, 5000);
+        }
+
+        // Event listener untuk Enter key
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                skipLink();
+            }
+        });
+    </script>
+</body>
+</html>
